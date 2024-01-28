@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "873819962396",
+    "project_id": "waste2wealth-92dfb",
+    "storage_bucket": "waste2wealth-92dfb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873819962396:android:6c769c7dc0e8f906d4b3d9",
+        "android_client_info": {
+          "package_name": "com.example.waste2wealth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfOzKM2uzmdEdf7xHk25I2-VKgy2K2HLA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
