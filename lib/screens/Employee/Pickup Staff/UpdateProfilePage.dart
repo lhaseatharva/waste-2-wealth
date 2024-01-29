@@ -127,7 +127,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
           children: [
             Row(
               children: [
-                Icon(Icons.person, size: 30),
+                const Icon(Icons.person, size: 30),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextFormField(
@@ -143,7 +143,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Icon(Icons.email, size: 30),
+                const Icon(Icons.email, size: 30),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextFormField(
@@ -159,7 +159,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Icon(Icons.phone, size: 30),
+                const Icon(Icons.phone, size: 30),
                 const SizedBox(width: 8),
                 Expanded(
                   child: TextFormField(
