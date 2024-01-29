@@ -79,7 +79,6 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
           'email': _emailController.text,
         });
 
-        // Update UserProfileModel using Provider
         Provider.of<UserProfileModel>(context, listen: false).updateUserProfile(
           newName: _nameController.text,
           newEmail: _emailController.text,

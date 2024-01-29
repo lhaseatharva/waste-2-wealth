@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManageRequestsPage.dart';
+import 'package:waste2wealth/screens/Employee/Pickup%20Staff/SetSchedulePage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/UpdateProfilePage.dart';
+
+void main() {
+  runApp(
+    MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.lightGreen,
+      ),
+      home: PickupStaffHomePage(),
+    ),
+  );
+}
 
 class PickupStaffHomePage extends StatefulWidget {
   const PickupStaffHomePage({Key? key}) : super(key: key);
 
   @override
-  State<PickupStaffHomePage> createState() => _PickupStaffHomePageState();
+  _PickupStaffHomePageState createState() => _PickupStaffHomePageState();
 }
 
 class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
@@ -37,7 +50,8 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                         const CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.white,
-                          child: Icon(Icons.person, size: 30, color: Colors.black),
+                          child:
+                              Icon(Icons.person, size: 30, color: Colors.black),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -61,7 +75,6 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                     leading: const Icon(Icons.update),
                     title: const Text('Update Schedule'),
                     onTap: () {
-                      // Add functionality for updating schedule
                       Navigator.pop(context); // Close the drawer
                     },
                   ),
@@ -72,7 +85,8 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => UpdateProfilePage(currentUser: user),
+                          builder: (context) =>
+                              UpdateProfilePage(currentUser: user),
                         ),
                       );
                     },
@@ -81,14 +95,14 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                     leading: const Icon(Icons.exit_to_app),
                     title: const Text('Log Out'),
                     onTap: () {
-                      // Add functionality for logging out
                       Navigator.pop(context); // Close the drawer
                     },
                   ),
                 ],
               );
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
             } else {
-              // Show loading indicator or handle other states
               return const Drawer();
             }
           },
@@ -101,20 +115,33 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Welcome Pickup Staff!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
+              StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, snapshot) {
+                  User? user = snapshot.data;
+                  if (snapshot.connectionState == ConnectionState.active) {
+                    return Text(
+                      'Welcome ${user?.displayName ?? ''}!',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    );
+                  } else {
+                    return const SizedBox();
+                  }
+                },
               ),
               const SizedBox(height: 16),
               ActionCard(
                 icon: Icons.calendar_today,
                 label: 'Set Weekly Schedule',
                 onPressed: () {
-                  // Add functionality for setting weekly schedule
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SetSchedulePage()));
                 },
               ),
               const SizedBox(height: 16),
@@ -122,7 +149,10 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                 icon: Icons.assignment,
                 label: 'Manage Requests',
                 onPressed: () {
-                  // Add functionality for managing requests
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ManageRequestsPage()));
                 },
               ),
               const SizedBox(height: 16),
@@ -148,11 +178,11 @@ class ActionCard extends StatelessWidget {
   final VoidCallback? onPressed;
 
   const ActionCard({
-    super.key,
+    Key? key,
     required this.icon,
     required this.label,
     this.onPressed,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +199,8 @@ class ActionCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -178,12 +209,4 @@ class ActionCard extends StatelessWidget {
       ),
     );
   }
-}
-
-void main() {
-  runApp(
-    const MaterialApp(
-      home: PickupStaffHomePage(),
-    ),
-  );
 }
