@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:waste2wealth/screens/Employee/Pickup%20Staff/UpdateProfilePage.dart';
 
 class PickupStaffHomePage extends StatefulWidget {
   const PickupStaffHomePage({Key? key}) : super(key: key);
@@ -9,21 +10,6 @@ class PickupStaffHomePage extends StatefulWidget {
 }
 
 class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCurrentUser();
-  }
-
-  Future<void> _fetchCurrentUser() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      setState(() {
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,10 +18,10 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
         title: const Text('Pickup Staff Home'),
       ),
       drawer: Drawer(
-        child: FutureBuilder<User?>(
-          future: FirebaseAuth.instance.authStateChanges().first,
+        child: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.connectionState == ConnectionState.active) {
               User? user = snapshot.data;
 
               return ListView(
@@ -48,7 +34,7 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.white,
                           child: Icon(Icons.person, size: 30, color: Colors.black),
@@ -56,14 +42,14 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                         const SizedBox(height: 10),
                         Text(
                           user?.displayName ?? '',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 18,
                           ),
                         ),
                         Text(
                           user?.email ?? '',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 14,
                           ),
@@ -83,8 +69,12 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                     leading: const Icon(Icons.account_circle),
                     title: const Text('Update Profile'),
                     onTap: () {
-                      // Add functionality for updating profile
-                      Navigator.pop(context); // Close the drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UpdateProfilePage(currentUser: user),
+                        ),
+                      );
                     },
                   ),
                   ListTile(
@@ -106,44 +96,46 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Welcome Pickup Staff!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Welcome Pickup Staff!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ActionCard(
-              icon: Icons.calendar_today,
-              label: 'Set Weekly Schedule',
-              onPressed: () {
-                // Add functionality for setting weekly schedule
-              },
-            ),
-            const SizedBox(height: 16),
-            ActionCard(
-              icon: Icons.assignment,
-              label: 'Manage Requests',
-              onPressed: () {
-                // Add functionality for managing requests
-              },
-            ),
-            const SizedBox(height: 16),
-            ActionCard(
-              icon: Icons.delivery_dining,
-              label: 'Manage Delivery',
-              onPressed: () {
-                // Add functionality for managing delivery
-                // Show fulfilled requests with Maps location link
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+              ActionCard(
+                icon: Icons.calendar_today,
+                label: 'Set Weekly Schedule',
+                onPressed: () {
+                  // Add functionality for setting weekly schedule
+                },
+              ),
+              const SizedBox(height: 16),
+              ActionCard(
+                icon: Icons.assignment,
+                label: 'Manage Requests',
+                onPressed: () {
+                  // Add functionality for managing requests
+                },
+              ),
+              const SizedBox(height: 16),
+              ActionCard(
+                icon: Icons.delivery_dining,
+                label: 'Manage Delivery',
+                onPressed: () {
+                  // Add functionality for managing delivery
+                  // Show fulfilled requests with Maps location link
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -156,11 +148,11 @@ class ActionCard extends StatelessWidget {
   final VoidCallback? onPressed;
 
   const ActionCard({
-    Key? key,
+    super.key,
     required this.icon,
     required this.label,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
