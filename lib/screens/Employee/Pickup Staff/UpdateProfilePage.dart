@@ -174,7 +174,7 @@ class _UpdateProfilePageState extends State<UpdateProfilePage> {
             const SizedBox(height: 16),
             if (_savingChanges) ...[
               const SizedBox(height: 16),
-              const CircularProgressIndicator(color: Colors.green),
+              const Center(child: CircularProgressIndicator(color: Colors.green)),
             ],
           ],
         ),
