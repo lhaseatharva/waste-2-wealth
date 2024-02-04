@@ -19,7 +19,7 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
-  final List<String> roles = ['Employee', 'Buyer'];
+  final List<String> roles = ['Employee', 'Buyer', 'Restaurant Owner'];
   final List<String> employeeSubRoles = [
     'Pickup Staff',
     'Compost Facility Staff'

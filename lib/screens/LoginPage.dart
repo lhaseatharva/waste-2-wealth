@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                           selectedSubRole = 'Pickup Staff';
                         });
                       },
-                      items: ['Employee', 'Buyer'].map((role) {
+                      items: ['Employee', 'Buyer', 'Restaurant'].map((role) {
                         return DropdownMenuItem(
                           value: role,
                           child: Text(role),

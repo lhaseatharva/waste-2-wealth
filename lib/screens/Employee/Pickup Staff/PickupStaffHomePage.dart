@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:waste2wealth/Provider/LoginLogoutProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManageRequestsPage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/SetSchedulePage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/UpdateProfilePage.dart';
+import 'package:waste2wealth/screens/LoginPage.dart';
+
 
 void main() {
   runApp(
@@ -10,13 +14,13 @@ void main() {
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
       ),
-      home: PickupStaffHomePage(),
+      home: const PickupStaffHomePage(),
     ),
   );
 }
 
 class PickupStaffHomePage extends StatefulWidget {
-  const PickupStaffHomePage({Key? key}) : super(key: key);
+  const PickupStaffHomePage({super.key});
 
   @override
   _PickupStaffHomePageState createState() => _PickupStaffHomePageState();
@@ -26,7 +30,6 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
   late User? currentUser;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<DrawerWidgetState> _drawerKey = GlobalKey<DrawerWidgetState>();
-
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +66,7 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                 },
               ),
               const SizedBox(height: 16),
-              ActionCard(
+              CardWidget(
                 icon: Icons.calendar_today,
                 label: 'Set Weekly Schedule',
                 onPressed: () {
@@ -76,7 +79,7 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                 },
               ),
               const SizedBox(height: 16),
-              ActionCard(
+              CardWidget(
                 icon: Icons.assignment,
                 label: 'Manage Requests',
                 onPressed: () {
@@ -89,7 +92,7 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
                 },
               ),
               const SizedBox(height: 16),
-              ActionCard(
+              CardWidget(
                 icon: Icons.delivery_dining,
                 label: 'Manage Delivery',
                 onPressed: () {
@@ -121,6 +124,7 @@ class DrawerWidgetState extends State<DrawerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<LoginLogoutProvider>(context,listen:false);
     return Drawer(
       child: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
@@ -185,6 +189,8 @@ class DrawerWidgetState extends State<DrawerWidget> {
                   title: const Text('Log Out'),
                   onTap: () {
                     Navigator.pop(context);
+                    authProvider.logout();
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>const LoginPage()));
                   },
                 ),
               ],
@@ -200,12 +206,12 @@ class DrawerWidgetState extends State<DrawerWidget> {
   }
 }
 
-class ActionCard extends StatelessWidget {
+class CardWidget extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
 
-  const ActionCard({
+  const CardWidget({
     super.key,
     required this.icon,
     required this.label,

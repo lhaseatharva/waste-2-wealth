@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:waste2wealth/Provider/LoginLogoutProvider.dart';
 import 'package:waste2wealth/Provider/UserProfileModel.dart';
 import 'package:waste2wealth/Provider/pickuprequest_provider.dart';
 import 'package:waste2wealth/Provider/registration_provider.dart';
@@ -23,6 +24,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => LoginLogoutProvider()),
         ChangeNotifierProvider(create: (context) => UserProfileModel()),
         ChangeNotifierProvider(create: (context) => RegistrationProvider()),
         ChangeNotifierProvider(create: (context) => PickupRequestProvider()),
