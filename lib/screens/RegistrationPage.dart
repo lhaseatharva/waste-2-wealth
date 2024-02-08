@@ -20,7 +20,10 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final List<String> roles = ['Employee', 'Buyer', 'Restaurant Owner'];
-  final List<String> employeeSubRoles = ['Pickup Staff', 'Compost Facility Staff'];
+  final List<String> employeeSubRoles = [
+    'Pickup Staff',
+    'Compost Facility Staff'
+  ];
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -35,11 +38,15 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     Future<void> registerUser() async {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
-        await FirebaseFirestore.instance.collection('Users').doc(userCredential.user!.uid).set({
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userCredential.user!.uid)
+            .set({
           'name': _nameController.text,
           'email': _emailController.text,
           'contactNumber': _contactNumberController.text,
@@ -59,7 +66,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
               const end = Offset.zero;
               const curve = Curves.easeInOut;
 
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
               var offsetAnimation = animation1.drive(tween);
 
@@ -157,7 +165,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           return 'Please enter a password';
                         } else if (value.length < 8) {
                           return 'Password should be at least 8 characters';
-                        } else if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$').hasMatch(value)) {
+                        } else if (!RegExp(
+                                r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$')
+                            .hasMatch(value)) {
                           return 'Password should contain at least one uppercase letter, one lowercase letter, and one number';
                         }
                         return null;
@@ -249,9 +259,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     const SizedBox(height: 16.0),
                     TextButton(
                       onPressed: () async {
-                        if (provider.selectedRole == 'Employee' && provider.selectedSubRole == null) {
+                        if (provider.selectedRole == 'Employee' &&
+                            provider.selectedSubRole == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please select your Sub-role')));
+                              const SnackBar(
+                                  content:
+                                      Text('Please select your Sub-role')));
                         }
 
                         if (_formKey.currentState!.validate()) {
@@ -263,7 +276,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.lightGreen.shade100,
                       ),
-                      child: const Text('Register', style: TextStyle(color: Colors.black)),
+                      child: const Text('Register',
+                          style: TextStyle(color: Colors.black)),
                     ),
                     const SizedBox(height: 16.0),
                     TextButton(
@@ -271,13 +285,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation1, animation2) => const LoginPage(),
-                            transitionsBuilder: (context, animation1, animation2, child) {
+                            pageBuilder: (context, animation1, animation2) =>
+                                const LoginPage(),
+                            transitionsBuilder:
+                                (context, animation1, animation2, child) {
                               const begin = Offset(1.0, 0.0);
                               const end = Offset.zero;
                               const curve = Curves.easeInOut;
 
-                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
 
                               var offsetAnimation = animation1.drive(tween);
 
@@ -286,11 +303,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                 child: child,
                               );
                             },
-                            transitionDuration: const Duration(milliseconds: 275),
+                            transitionDuration:
+                                const Duration(milliseconds: 275),
                           ),
                         );
                       },
-                      child: const Text('Existing user, login here', style: TextStyle(color: Colors.black)),
+                      child: const Text('Existing user, login here',
+                          style: TextStyle(color: Colors.black)),
                     ),
                   ],
                 ),
