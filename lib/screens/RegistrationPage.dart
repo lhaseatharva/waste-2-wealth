@@ -57,6 +57,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         provider.setRegistrationSuccessful(true);
 
         // Redirect to LoginPage after successful registration with page transition animation
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
