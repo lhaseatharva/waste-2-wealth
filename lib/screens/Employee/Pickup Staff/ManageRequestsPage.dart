@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:waste2wealth/screens/Restaurant/RestauaranLocationtMap.dart'; // Import the url_launcher package
 
 class ManageRequestsPage extends StatefulWidget {
-  const ManageRequestsPage({Key? key}) : super(key: key);
+  const ManageRequestsPage({super.key});
 
   @override
   _ManageRequestsPageState createState() => _ManageRequestsPageState();
@@ -34,8 +36,8 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
     _currentDay = DateFormat('EEEE').format(now);
   }
 
-  Future<List<String>> _fetchRequests() async {
-    List<String> requests = [];
+  Future<List<Map<String, dynamic>>> _fetchRequests() async {
+    List<Map<String, dynamic>> requests = [];
 
     if (_user != null) {
       try {
@@ -46,14 +48,10 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                 .doc(_user!.uid)
                 .get();
 
-        print('User Schedule Document: ${userScheduleDocument.data()}');
-
         // Get the selected area for the current day
         String selectedArea =
             userScheduleDocument['schedule']?[_currentDay] ?? '';
         selectedArea = selectedArea; // Ensure it's not null
-
-        print('Selected Area: $selectedArea');
 
         if (selectedArea.isNotEmpty) {
           // Fetch requests from restaurants in the selected area
@@ -63,9 +61,6 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                   .where('address', isEqualTo: selectedArea)
                   .get();
 
-          print(
-              'Requests Snapshot: ${requestsSnapshot.docs.map((doc) => doc.data())}');
-
           // Extract request information based on pickupDays
           requests = requestsSnapshot.docs.where((doc) {
             List<String> pickupDays =
@@ -73,11 +68,15 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
             return pickupDays.contains(_currentDay);
           }).map((doc) {
             // Adjust this part based on the actual structure of your documents
-            String requestInfo = 'Restaurant: ${doc['restaurantName']}\n'
-                'Address: ${doc['address']}\n'
-                'Contact Number: ${doc['contactNumber']}\n'
-                'Owner: ${doc['ownerName']}';
-            return requestInfo;
+            return {
+              'id': doc.id,
+              'restaurantName': doc['restaurantName'],
+              'address': doc['address'],
+              'contactNumber': doc['contactNumber'],
+              'ownerName': doc['ownerName'],
+              'latitude': doc['latitude'],
+              'longitude': doc['longitude'],
+            };
           }).toList();
         } else {
           print('Selected area is empty.');
@@ -88,6 +87,18 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
     }
 
     return requests;
+  }
+
+  // Function to initiate a phone call
+  Future<void> _callRestaurant(String phoneNumber) async {
+    final String url =
+        'tel:$phoneNumber'; // Create a tel URL with the phone number
+    if (await canLaunch(url)) {
+      // Check if the device can launch the URL
+      await launch(url); // Launch the phone call
+    } else {
+      throw 'Could not launch $url'; // Handle error if unable to launch
+    }
   }
 
   @override
@@ -111,7 +122,7 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                   color: Colors.grey.shade200,
                 ),
                 padding: const EdgeInsets.all(16),
-                child: FutureBuilder<List<String>>(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
                   future: _fetchRequests(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -121,20 +132,88 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                         child: Text('Error: ${snapshot.error}'),
                       );
                     } else if (snapshot.hasData) {
-                      return ListView(
-                        children: snapshot.data!
-                            .map((request) => Card(
-                                  elevation: 3,
-                                  margin: const EdgeInsets.all(8),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Text(
-                                      request,
-                                      style: const TextStyle(fontSize: 16),
+                      return ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          final request = snapshot.data![index];
+                          return Card(
+                            elevation: 3,
+                            margin: const EdgeInsets.all(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Restaurant: ${request['restaurantName']}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Address: ${request['address']}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Contact Number: ${request['contactNumber']}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Owner: ${request['ownerName']}',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Colors.lightGreen.shade100,
+                                        fixedSize: const Size.fromWidth(500)),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              RestaurantLocationMapPage(
+                                            latitude: request['latitude'],
+                                            longitude: request['longitude'],
+                                            restaurantName:
+                                                request['restaurantName'],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Navigate',
+                                      style: TextStyle(color: Colors.black),
                                     ),
                                   ),
-                                ))
-                            .toList(),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                      onPressed: () {
+                                        _callRestaurant(
+                                            request['contactNumber']);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Colors.lightGreen.shade100,
+                                          fixedSize: const Size.fromWidth(500)),
+                                      child: const Text(
+                                        'Call Restaurant',
+                                        style: TextStyle(color: Colors.black),
+                                      )),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Colors.lightGreen.shade100,
+                                          fixedSize: const Size.fromWidth(500)),
+                                      child: const Text('Mark as Complete', style: TextStyle(color: Colors.black),))
+                                ],
+                              ),
+                            ),
+                          );
+                        },
                       );
                     } else {
                       return const SizedBox();
@@ -152,7 +231,7 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
 
 void main() {
   runApp(
-    MaterialApp(
+    const MaterialApp(
       home: ManageRequestsPage(),
     ),
   );

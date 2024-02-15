@@ -1,7 +1,19 @@
 # This is a generated file; do not edit or check into version control.
-cloud_firestore=/home/atharva/.pub-cache/hosted/pub.dev/cloud_firestore-4.14.0/
-cloud_firestore_web=/home/atharva/.pub-cache/hosted/pub.dev/cloud_firestore_web-3.9.0/
-firebase_auth=/home/atharva/.pub-cache/hosted/pub.dev/firebase_auth-4.16.0/
-firebase_auth_web=/home/atharva/.pub-cache/hosted/pub.dev/firebase_auth_web-5.8.13/
-firebase_core=/home/atharva/.pub-cache/hosted/pub.dev/firebase_core-2.24.2/
-firebase_core_web=/home/atharva/.pub-cache/hosted/pub.dev/firebase_core_web-2.10.0/
+cloud_firestore=/home/atharva/.pub-cache/hosted/pub.dev/cloud_firestore-4.15.4/
+cloud_firestore_web=/home/atharva/.pub-cache/hosted/pub.dev/cloud_firestore_web-3.10.4/
+firebase_auth=/home/atharva/.pub-cache/hosted/pub.dev/firebase_auth-4.17.4/
+firebase_auth_web=/home/atharva/.pub-cache/hosted/pub.dev/firebase_auth_web-5.9.4/
+firebase_core=/home/atharva/.pub-cache/hosted/pub.dev/firebase_core-2.25.4/
+firebase_core_web=/home/atharva/.pub-cache/hosted/pub.dev/firebase_core_web-2.11.4/
+geolocator=/home/atharva/.pub-cache/hosted/pub.dev/geolocator-10.1.1/
+geolocator_android=/home/atharva/.pub-cache/hosted/pub.dev/geolocator_android-4.5.2/
+geolocator_apple=/home/atharva/.pub-cache/hosted/pub.dev/geolocator_apple-2.3.6/
+geolocator_web=/home/atharva/.pub-cache/hosted/pub.dev/geolocator_web-2.2.1/
+geolocator_windows=/home/atharva/.pub-cache/hosted/pub.dev/geolocator_windows-0.2.2/
+url_launcher=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher-6.2.4/
+url_launcher_android=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.0/
+url_launcher_ios=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher_ios-6.2.4/
+url_launcher_linux=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher_linux-3.1.1/
+url_launcher_macos=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher_macos-3.1.0/
+url_launcher_web=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher_web-2.2.3/
+url_launcher_windows=/home/atharva/.pub-cache/hosted/pub.dev/url_launcher_windows-3.1.1/

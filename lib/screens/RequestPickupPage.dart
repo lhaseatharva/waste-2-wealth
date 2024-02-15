@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waste2wealth/Provider/pickuprequest_provider.dart';
+import 'package:geolocator/geolocator.dart';
 
 class RequestPickupPage extends StatefulWidget {
   const RequestPickupPage({Key? key}) : super(key: key);
@@ -151,7 +152,20 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                           : () async {
                               if (_formKey.currentState!.validate()) {
                                 provider.setLoading(true);
-                                await saveRequestToFirestore(context);
+                                LocationPermission permission =
+                                    await Geolocator.checkPermission();
+                                if (permission == LocationPermission.denied ||
+                                    permission == LocationPermission.deniedForever) {
+                                  // Handle denied permission
+                                  print('Location permission denied');
+                                  LocationPermission ask =
+                                      await Geolocator.requestPermission();
+                                } else {
+                                  Position? location = await _captureLocation();
+                                  if (location != null) {
+                                    await saveRequestToFirestore(context, location);
+                                  }
+                                }
                               }
                             },
                       child: provider.isLoading
@@ -160,6 +174,35 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                               'Submit Request',
                               style: TextStyle(color: Colors.black),
                             ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.lightGreen.shade100),
+                      onPressed: () async {
+                        LocationPermission permission =
+                            await Geolocator.checkPermission();
+                        if (permission == LocationPermission.denied ||
+                            permission == LocationPermission.deniedForever) {
+                          // Handle denied permission
+                          print('Location permission denied');
+                          LocationPermission ask =
+                              await Geolocator.requestPermission();
+                        } else {
+                          Position? location = await _captureLocation();
+                          if (location != null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Location captured successfully!!'),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      child: const Text(
+                          style: TextStyle(color: Colors.black),
+                          'Grab current Location'),
                     ),
                   ],
                 ),
@@ -171,17 +214,24 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
     );
   }
 
-  Future<void> saveRequestToFirestore(BuildContext context) async {
+  Future<void> saveRequestToFirestore(
+      BuildContext context, Position location) async {
     final provider = Provider.of<PickupRequestProvider>(context, listen: false);
 
     try {
-      await pickupRequestsRef.add({
+      // Capture current timestamp
+      final timestamp = FieldValue.serverTimestamp();
+
+      // Save request data to Firestore
+      final newDocumentRef = await pickupRequestsRef.add({
         'restaurantName': _restaurantNameController.text,
         'ownerName': _ownerNameController.text,
         'contactNumber': _contactNumberController.text,
         'address': _addressController.text,
         'pickupDays': _pickupDays,
-        'timestamp': FieldValue.serverTimestamp(),
+        'timestamp': timestamp,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
       });
 
       provider.setLoading(false);
@@ -210,5 +260,24 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
       }
       // Handle the error as needed
     }
+  }
+
+  Future<Position?> _captureLocation() async {
+    try {
+      // Request permission to access device's location
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        // Handle denied permission
+        print('Location permission denied');
+        LocationPermission ask = await Geolocator.requestPermission();
+      } else {
+        return await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+      }
+    } catch (e) {
+      print('Error capturing location: $e');
+    }
+    return null;
   }
 }
