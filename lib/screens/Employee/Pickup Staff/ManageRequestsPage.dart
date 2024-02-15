@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:waste2wealth/screens/Restaurant/RestauaranLocationtMap.dart'; // Import the url_launcher package
+import 'package:url_launcher/url_launcher.dart'; // Import the url_launcher package
+import 'package:waste2wealth/screens/Restaurant/RestauaranLocationtMap.dart';
 
 class ManageRequestsPage extends StatefulWidget {
-  const ManageRequestsPage({super.key});
+  const ManageRequestsPage({Key? key}) : super(key: key); // Fix the constructor
 
   @override
   _ManageRequestsPageState createState() => _ManageRequestsPageState();
@@ -91,13 +91,11 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
 
   // Function to initiate a phone call
   Future<void> _callRestaurant(String phoneNumber) async {
-    final String url =
-        'tel:$phoneNumber'; // Create a tel URL with the phone number
-    if (await canLaunch(url)) {
-      // Check if the device can launch the URL
-      await launch(url); // Launch the phone call
-    } else {
-      throw 'Could not launch $url'; // Handle error if unable to launch
+    final Uri dialNumber = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      await launch(dialNumber.toString()); // Launch the phone call
+    } catch (e) {
+      print('Could not launch phone call: $e'); // Handle error if unable to launch
     }
   }
 
@@ -166,9 +164,10 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                   const SizedBox(height: 16),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Colors.lightGreen.shade100,
-                                        fixedSize: const Size.fromWidth(500)),
+                                      backgroundColor:
+                                          Colors.lightGreen.shade100,
+                                      fixedSize: const Size.fromWidth(500),
+                                    ),
                                     onPressed: () {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
@@ -189,26 +188,33 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
-                                      onPressed: () {
-                                        _callRestaurant(
-                                            request['contactNumber']);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              Colors.lightGreen.shade100,
-                                          fixedSize: const Size.fromWidth(500)),
-                                      child: const Text(
-                                        'Call Restaurant',
-                                        style: TextStyle(color: Colors.black),
-                                      )),
+                                    onPressed: () {
+                                      _callRestaurant(
+                                          request['contactNumber']); // Pass the phone number
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Colors.lightGreen.shade100,
+                                      fixedSize: const Size.fromWidth(500),
+                                    ),
+                                    child: const Text(
+                                      'Call Restaurant',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  ),
                                   const SizedBox(height: 16),
                                   ElevatedButton(
-                                      onPressed: () {},
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              Colors.lightGreen.shade100,
-                                          fixedSize: const Size.fromWidth(500)),
-                                      child: const Text('Mark as Complete', style: TextStyle(color: Colors.black),))
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Colors.lightGreen.shade100,
+                                      fixedSize: const Size.fromWidth(500),
+                                    ),
+                                    child: const Text(
+                                      'Mark as Complete',
+                                      style: TextStyle(color: Colors.black),
+                                    ),
+                                  )
                                 ],
                               ),
                             ),
