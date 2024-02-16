@@ -7,7 +7,7 @@ class RestaurantLocationMapPage extends StatelessWidget {
   final double longitude;
   final String restaurantName;
 
-  const RestaurantLocationMapPage({
+  const RestaurantLocationMapPage({super.key, 
     required this.latitude,
     required this.longitude,
     required this.restaurantName,
@@ -33,10 +33,10 @@ class RestaurantLocationMapPage extends StatelessWidget {
             markers: [
               Marker(
                 point: LatLng(latitude, longitude),
-                child: Icon(
+                child: const Icon(
                   Icons.restaurant,
                   color: Colors.red,
-                  size: 40.0,
+                  size: 25,
                 ),
               ),
             ],

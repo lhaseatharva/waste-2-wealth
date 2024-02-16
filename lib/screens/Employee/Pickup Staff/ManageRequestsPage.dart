@@ -61,11 +61,17 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                   .where('address', isEqualTo: selectedArea)
                   .get();
 
-          // Extract request information based on pickupDays
+          // Extract request information based on pickupDays and status
           requests = requestsSnapshot.docs.where((doc) {
             List<String> pickupDays =
                 List<String>.from(doc['pickupDays'] ?? []);
-            return pickupDays.contains(_currentDay);
+            List<dynamic> statusArray = List<dynamic>.from(doc['status'] ?? []);
+
+            // Check if there's a status entry for the current day
+            bool currentDayStatus = statusArray.any((status) =>
+                status['day'] == _currentDay && status['status'] == false);
+
+            return pickupDays.contains(_currentDay) && currentDayStatus;
           }).map((doc) {
             // Adjust this part based on the actual structure of your documents
             return {
@@ -95,7 +101,8 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
     try {
       await launch(dialNumber.toString()); // Launch the phone call
     } catch (e) {
-      print('Could not launch phone call: $e'); // Handle error if unable to launch
+      print(
+          'Could not launch phone call: $e'); // Handle error if unable to launch
     }
   }
 
@@ -163,7 +170,8 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton.icon(
-                                    icon: const Icon(Icons.location_pin, color: Colors.black),
+                                    icon: const Icon(Icons.location_pin,
+                                        color: Colors.black),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
                                           Colors.lightGreen.shade100,
@@ -189,10 +197,11 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton.icon(
-                                    icon: const Icon(Icons.phone, color: Colors.black),
+                                    icon: const Icon(Icons.phone,
+                                        color: Colors.black),
                                     onPressed: () {
-                                      _callRestaurant(
-                                          request['contactNumber']); // Pass the phone number
+                                      _callRestaurant(request[
+                                          'contactNumber']); // Pass the phone number
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
@@ -206,7 +215,8 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                   ),
                                   const SizedBox(height: 16),
                                   ElevatedButton.icon(
-                                    icon: const Icon(Icons.task_alt_outlined, color: Colors.black),
+                                    icon: const Icon(Icons.task_alt_outlined,
+                                        color: Colors.black),
                                     onPressed: () {},
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:

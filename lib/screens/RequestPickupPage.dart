@@ -20,7 +20,6 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
   final _addressController = TextEditingController();
   final List<String> _pickupDays = [];
 
-  // Replace with your Firestore collection reference
   final CollectionReference pickupRequestsRef =
       FirebaseFirestore.instance.collection('PickupRequests');
 
@@ -157,7 +156,6 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                                 if (permission == LocationPermission.denied ||
                                     permission ==
                                         LocationPermission.deniedForever) {
-                                  // Handle denied permission
                                   print('Location permission denied');
                                   LocationPermission ask =
                                       await Geolocator.requestPermission();
@@ -186,7 +184,6 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                             await Geolocator.checkPermission();
                         if (permission == LocationPermission.denied ||
                             permission == LocationPermission.deniedForever) {
-                          // Handle denied permission
                           print('Location permission denied');
                           LocationPermission ask =
                               await Geolocator.requestPermission();
@@ -229,10 +226,10 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
       // Capture current timestamp
       final timestamp = FieldValue.serverTimestamp();
 
-      // Initialize status list of maps for each day
-      List<Map<String, dynamic>> status = [];
+      // Initialize status map for each day
+      Map<String, dynamic> status = {};
 
-      // Populate status with each day initially set to false
+      // Populate status with each day initially set to 'false'
       for (var day in [
         'Sunday',
         'Monday',
@@ -242,14 +239,11 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
         'Friday',
         'Saturday',
       ]) {
-        status.add({
-          'day': day,
-          'status': false,
-        });
+        status[day] = false;
       }
 
       // Save request data to Firestore
-      final newDocumentRef = await pickupRequestsRef.add({
+      await pickupRequestsRef.add({
         'restaurantName': _restaurantNameController.text,
         'ownerName': _ownerNameController.text,
         'contactNumber': _contactNumberController.text,
@@ -291,11 +285,9 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
 
   Future<Position?> _captureLocation() async {
     try {
-      // Request permission to access device's location
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        // Handle denied permission
         print('Location permission denied');
         LocationPermission ask = await Geolocator.requestPermission();
       } else {
