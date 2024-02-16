@@ -162,7 +162,8 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                     style: const TextStyle(fontSize: 16),
                                   ),
                                   const SizedBox(height: 16),
-                                  ElevatedButton(
+                                  ElevatedButton.icon(
+                                    icon: const Icon(Icons.location_pin, color: Colors.black),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
                                           Colors.lightGreen.shade100,
@@ -181,13 +182,14 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                         ),
                                       );
                                     },
-                                    child: const Text(
+                                    label: const Text(
                                       'Navigate',
                                       style: TextStyle(color: Colors.black),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  ElevatedButton(
+                                  ElevatedButton.icon(
+                                    icon: const Icon(Icons.phone, color: Colors.black),
                                     onPressed: () {
                                       _callRestaurant(
                                           request['contactNumber']); // Pass the phone number
@@ -197,20 +199,21 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                           Colors.lightGreen.shade100,
                                       fixedSize: const Size.fromWidth(500),
                                     ),
-                                    child: const Text(
+                                    label: const Text(
                                       'Call Restaurant',
                                       style: TextStyle(color: Colors.black),
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  ElevatedButton(
+                                  ElevatedButton.icon(
+                                    icon: const Icon(Icons.task_alt_outlined, color: Colors.black),
                                     onPressed: () {},
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
                                           Colors.lightGreen.shade100,
                                       fixedSize: const Size.fromWidth(500),
                                     ),
-                                    child: const Text(
+                                    label: const Text(
                                       'Mark as Complete',
                                       style: TextStyle(color: Colors.black),
                                     ),

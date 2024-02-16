@@ -155,7 +155,8 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                                 LocationPermission permission =
                                     await Geolocator.checkPermission();
                                 if (permission == LocationPermission.denied ||
-                                    permission == LocationPermission.deniedForever) {
+                                    permission ==
+                                        LocationPermission.deniedForever) {
                                   // Handle denied permission
                                   print('Location permission denied');
                                   LocationPermission ask =
@@ -163,7 +164,8 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                                 } else {
                                   Position? location = await _captureLocation();
                                   if (location != null) {
-                                    await saveRequestToFirestore(context, location);
+                                    await saveRequestToFirestore(
+                                        context, location);
                                   }
                                 }
                               }
@@ -193,8 +195,8 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                           if (location != null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                    'Location captured successfully!!'),
+                                content:
+                                    Text('Location captured successfully!!'),
                               ),
                             );
                           }
@@ -215,12 +217,36 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
   }
 
   Future<void> saveRequestToFirestore(
-      BuildContext context, Position location) async {
-    final provider = Provider.of<PickupRequestProvider>(context, listen: false);
+    BuildContext context,
+    Position location,
+  ) async {
+    final provider = Provider.of<PickupRequestProvider>(
+      context,
+      listen: false,
+    );
 
     try {
       // Capture current timestamp
       final timestamp = FieldValue.serverTimestamp();
+
+      // Initialize status list of maps for each day
+      List<Map<String, dynamic>> status = [];
+
+      // Populate status with each day initially set to false
+      for (var day in [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ]) {
+        status.add({
+          'day': day,
+          'status': false,
+        });
+      }
 
       // Save request data to Firestore
       final newDocumentRef = await pickupRequestsRef.add({
@@ -229,6 +255,7 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
         'contactNumber': _contactNumberController.text,
         'address': _addressController.text,
         'pickupDays': _pickupDays,
+        'status': status, // Include the status field here
         'timestamp': timestamp,
         'latitude': location.latitude,
         'longitude': location.longitude,
