@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:waste2wealth/Provider/RequestNotifierProvider.dart';
 
 class ManageRequestsPage extends StatefulWidget {
-  const ManageRequestsPage({super.key});
+  const ManageRequestsPage({Key? key}) : super(key: key);
 
   @override
   _ManageRequestsPageState createState() => _ManageRequestsPageState();
@@ -17,7 +17,6 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
   late User? _user;
   late String _currentDay;
   bool _loading = false;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -130,30 +129,23 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
               FieldValue.serverTimestamp(),
         });
 
-        ScaffoldMessengerState scaffoldMessenger =
-            ScaffoldMessenger.of(context);
-        if (scaffoldMessenger.mounted) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text('Request marked as complete'),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Request marked as complete'),
+          ),
+        );
 
         final updatedRequests = await _fetchRequests();
         Provider.of<RequestNotifierProvider>(context, listen: false)
             .updateRequests(updatedRequests);
+
       } catch (error) {
         print('Error marking request as complete: $error');
-        ScaffoldMessengerState scaffoldMessenger =
-            ScaffoldMessenger.of(context);
-        if (scaffoldMessenger.mounted) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text('Error marking request as complete'),
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error marking request as complete'),
+          ),
+        );
       } finally {
         setState(() {
           _loading = false;
@@ -283,8 +275,7 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                         ),
                                         const SizedBox(height: 16),
                                         ElevatedButton.icon(
-                                          icon: const Icon(
-                                              Icons.task_alt_outlined,
+                                          icon: const Icon(Icons.task_alt_outlined,
                                               color: Colors.black),
                                           onPressed: () {
                                             _markRequestAsComplete(
