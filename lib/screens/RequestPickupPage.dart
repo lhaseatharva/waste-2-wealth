@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -200,8 +201,9 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                         }
                       },
                       child: const Text(
-                          style: TextStyle(color: Colors.black),
-                          'Grab current Location'),
+                        'Grab current Location',
+                        style: TextStyle(color: Colors.black),
+                      ),
                     ),
                   ],
                 ),
@@ -223,13 +225,27 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
     );
 
     try {
+      // Generate an alphanumeric request ID
+      final requestId =
+          'REQ${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(10000)}';
+
       // Capture current timestamp
       final timestamp = FieldValue.serverTimestamp();
 
-      // Initialize status map for each day
-      Map<String, dynamic> status = {};
+      // Save request data to Firestore
+      Map<String, dynamic> requestData = {
+        'requestId': requestId,
+        'restaurantName': _restaurantNameController.text,
+        'ownerName': _ownerNameController.text,
+        'contactNumber': _contactNumberController.text,
+        'address': _addressController.text,
+        'pickupDays': _pickupDays,
+        'timestamp': timestamp,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+      };
 
-      // Populate status with each day initially set to 'false'
+      // Create separate boolean fields for each day and set status
       for (var day in [
         'Sunday',
         'Monday',
@@ -239,21 +255,12 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
         'Friday',
         'Saturday',
       ]) {
-        status[day] = false;
+        if (_pickupDays.contains(day)) {
+          requestData['${day.toLowerCase()}Status'] = 'pending';
+        }
       }
 
-      // Save request data to Firestore
-      await pickupRequestsRef.add({
-        'restaurantName': _restaurantNameController.text,
-        'ownerName': _ownerNameController.text,
-        'contactNumber': _contactNumberController.text,
-        'address': _addressController.text,
-        'pickupDays': _pickupDays,
-        'status': status, // Include the status field here
-        'timestamp': timestamp,
-        'latitude': location.latitude,
-        'longitude': location.longitude,
-      });
+      await pickupRequestsRef.add(requestData);
 
       provider.setLoading(false);
 

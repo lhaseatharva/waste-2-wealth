@@ -1,12 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart'; // Import the url_launcher package
-import 'package:waste2wealth/screens/Restaurant/RestauaranLocationtMap.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:waste2wealth/Provider/RequestNotifierProvider.dart';
 
 class ManageRequestsPage extends StatefulWidget {
-  const ManageRequestsPage({Key? key}) : super(key: key); // Fix the constructor
+  const ManageRequestsPage({super.key});
 
   @override
   _ManageRequestsPageState createState() => _ManageRequestsPageState();
@@ -15,6 +16,8 @@ class ManageRequestsPage extends StatefulWidget {
 class _ManageRequestsPageState extends State<ManageRequestsPage> {
   late User? _user;
   late String _currentDay;
+  bool _loading = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -41,39 +44,29 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
 
     if (_user != null) {
       try {
-        // Fetch the user's schedule
         DocumentSnapshot<Map<String, dynamic>> userScheduleDocument =
             await FirebaseFirestore.instance
                 .collection('Staff Schedule')
                 .doc(_user!.uid)
                 .get();
 
-        // Get the selected area for the current day
         String selectedArea =
             userScheduleDocument['schedule']?[_currentDay] ?? '';
-        selectedArea = selectedArea; // Ensure it's not null
 
         if (selectedArea.isNotEmpty) {
-          // Fetch requests from restaurants in the selected area
           QuerySnapshot<Map<String, dynamic>> requestsSnapshot =
               await FirebaseFirestore.instance
                   .collection('PickupRequests')
                   .where('address', isEqualTo: selectedArea)
                   .get();
 
-          // Extract request information based on pickupDays and status
           requests = requestsSnapshot.docs.where((doc) {
             List<String> pickupDays =
                 List<String>.from(doc['pickupDays'] ?? []);
-            List<dynamic> statusArray = List<dynamic>.from(doc['status'] ?? []);
+            String status = doc[_currentDay.toLowerCase() + 'Status'];
 
-            // Check if there's a status entry for the current day
-            bool currentDayStatus = statusArray.any((status) =>
-                status['day'] == _currentDay && status['status'] == false);
-
-            return pickupDays.contains(_currentDay) && currentDayStatus;
+            return pickupDays.contains(_currentDay) && status == 'pending';
           }).map((doc) {
-            // Adjust this part based on the actual structure of your documents
             return {
               'id': doc.id,
               'restaurantName': doc['restaurantName'],
@@ -93,6 +86,80 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
     }
 
     return requests;
+  }
+
+  Future<void> _markRequestAsComplete(
+      BuildContext context, String requestId) async {
+    final bool confirmed = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm'),
+          content:
+              Text('Are you sure you want to mark this request as complete?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: Text('Yes'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: Text('No'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != null && confirmed) {
+      try {
+        setState(() {
+          _loading = true;
+        });
+
+        await FirebaseFirestore.instance
+            .collection('PickupRequests')
+            .doc(requestId)
+            .update({
+          '${_currentDay.toLowerCase()}Status': 'complete',
+          '${_currentDay.toLowerCase()}CompletionTimestamp':
+              FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessengerState scaffoldMessenger =
+            ScaffoldMessenger.of(context);
+        if (scaffoldMessenger.mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text('Request marked as complete'),
+            ),
+          );
+        }
+
+        final updatedRequests = await _fetchRequests();
+        Provider.of<RequestNotifierProvider>(context, listen: false)
+            .updateRequests(updatedRequests);
+      } catch (error) {
+        print('Error marking request as complete: $error');
+        ScaffoldMessengerState scaffoldMessenger =
+            ScaffoldMessenger.of(context);
+        if (scaffoldMessenger.mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text('Error marking request as complete'),
+            ),
+          );
+        }
+      } finally {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
   }
 
   // Function to initiate a phone call
@@ -115,134 +182,141 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 16),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.grey.shade200,
-                ),
-                padding: const EdgeInsets.all(16),
-                child: FutureBuilder<List<Map<String, dynamic>>>(
-                  future: _fetchRequests(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    } else if (snapshot.hasData) {
-                      return ListView.builder(
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          final request = snapshot.data![index];
-                          return Card(
-                            elevation: 3,
-                            margin: const EdgeInsets.all(8),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Restaurant: ${request['restaurantName']}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Address: ${request['address']}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Contact Number: ${request['contactNumber']}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Owner: ${request['ownerName']}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton.icon(
-                                    icon: const Icon(Icons.location_pin,
-                                        color: Colors.black),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.lightGreen.shade100,
-                                      fixedSize: const Size.fromWidth(500),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              RestaurantLocationMapPage(
-                                            latitude: request['latitude'],
-                                            longitude: request['longitude'],
-                                            restaurantName:
-                                                request['restaurantName'],
+        child: _loading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey.shade200,
+                      ),
+                      padding: const EdgeInsets.all(16),
+                      child: FutureBuilder<List<Map<String, dynamic>>>(
+                        future: _fetchRequests(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          } else if (snapshot.hasData) {
+                            return ListView.builder(
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, index) {
+                                final request = snapshot.data![index];
+                                return Card(
+                                  elevation: 3,
+                                  margin: const EdgeInsets.all(8),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Restaurant: ${request['restaurantName']}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Address: ${request['address']}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Contact Number: ${request['contactNumber']}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Owner: ${request['ownerName']}',
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton.icon(
+                                          icon: const Icon(Icons.location_pin,
+                                              color: Colors.black),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                Colors.lightGreen.shade100,
+                                            fixedSize:
+                                                const Size.fromWidth(500),
+                                          ),
+                                          onPressed: () {
+                                            // Navigate to restaurant location map
+                                          },
+                                          label: const Text(
+                                            'Navigate',
+                                            style:
+                                                TextStyle(color: Colors.black),
                                           ),
                                         ),
-                                      );
-                                    },
-                                    label: const Text(
-                                      'Navigate',
-                                      style: TextStyle(color: Colors.black),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton.icon(
+                                          icon: const Icon(Icons.phone,
+                                              color: Colors.black),
+                                          onPressed: () {
+                                            _callRestaurant(request[
+                                                'contactNumber']); // Pass the phone number
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                Colors.lightGreen.shade100,
+                                            fixedSize:
+                                                const Size.fromWidth(500),
+                                          ),
+                                          label: const Text(
+                                            'Call Restaurant',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton.icon(
+                                          icon: const Icon(
+                                              Icons.task_alt_outlined,
+                                              color: Colors.black),
+                                          onPressed: () {
+                                            _markRequestAsComplete(
+                                                context, request['id']);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                Colors.lightGreen.shade100,
+                                            fixedSize:
+                                                const Size.fromWidth(500),
+                                          ),
+                                          label: const Text(
+                                            'Mark as Complete',
+                                            style:
+                                                TextStyle(color: Colors.black),
+                                          ),
+                                        )
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton.icon(
-                                    icon: const Icon(Icons.phone,
-                                        color: Colors.black),
-                                    onPressed: () {
-                                      _callRestaurant(request[
-                                          'contactNumber']); // Pass the phone number
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.lightGreen.shade100,
-                                      fixedSize: const Size.fromWidth(500),
-                                    ),
-                                    label: const Text(
-                                      'Call Restaurant',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  ElevatedButton.icon(
-                                    icon: const Icon(Icons.task_alt_outlined,
-                                        color: Colors.black),
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.lightGreen.shade100,
-                                      fixedSize: const Size.fromWidth(500),
-                                    ),
-                                    label: const Text(
-                                      'Mark as Complete',
-                                      style: TextStyle(color: Colors.black),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          );
+                                );
+                              },
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
                         },
-                      );
-                    } else {
-                      return const SizedBox();
-                    }
-                  },
-                ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -250,8 +324,11 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
 
 void main() {
   runApp(
-    const MaterialApp(
-      home: ManageRequestsPage(),
+    ChangeNotifierProvider(
+      create: (context) => RequestNotifierProvider(),
+      child: MaterialApp(
+        home: ManageRequestsPage(),
+      ),
     ),
   );
 }
