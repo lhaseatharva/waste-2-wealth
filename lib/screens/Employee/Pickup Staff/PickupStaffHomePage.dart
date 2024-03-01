@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:waste2wealth/Provider/LoginLogoutProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/CompFacilityNav.dart';
+import 'package:waste2wealth/screens/Employee/Pickup%20Staff/CompletedRequests.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManagePickupSchedule.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManageRequestsPage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/SetSchedulePage.dart';
@@ -95,10 +96,10 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
               ),
               const SizedBox(height: 16),
               CardWidget(
-                icon: Icons.location_pin,
-                label: 'Navigate to Compost Facility',
+                icon: Icons.task_alt,
+                label: 'Completed Requests',
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>const CompFacilityNav()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>const CompletedRequestsPage()));
                 },
               ),
             ],
