@@ -115,7 +115,7 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
       },
     );
 
-    if (confirmed != null && confirmed) {
+    if (confirmed) {
       try {
         setState(() {
           _loading = true;
