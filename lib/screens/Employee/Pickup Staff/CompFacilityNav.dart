@@ -18,7 +18,7 @@ class _CompFacilityNavState extends State<CompFacilityNav> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Location: ${widget.facilityName ?? ''}',
+        title: Text('Location: ${widget.facilityName}',
             style: TextStyle(fontSize: 20)),
       ),
       body: FlutterMap(
@@ -34,7 +34,7 @@ class _CompFacilityNavState extends State<CompFacilityNav> {
           MarkerLayer(
             markers: [
               Marker(
-                point: LatLng(widget.latitude ?? 0, widget.longitude ?? 0),
+                point: LatLng(widget.latitude, widget.longitude),
                 child: const Icon(Icons.location_on_outlined,
                     color: Colors.redAccent, size: 35),
               )
