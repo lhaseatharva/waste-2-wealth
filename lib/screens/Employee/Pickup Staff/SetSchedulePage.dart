@@ -82,6 +82,13 @@ class _SetSchedulePageState extends State<SetSchedulePage> {
       'Hadapsar',
       'Erandwane',
       'Aundh',
+      'Pashan',
+      'Warje',
+      'Yerawada',
+      'Mundhwa',
+      'Kondhwa',
+      'Ravet',
+      'Akurdi',
       'Baner',
       'Balewadi',
       'Wakad'

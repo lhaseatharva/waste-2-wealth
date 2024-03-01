@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:waste2wealth/Provider/LoginLogoutProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:waste2wealth/screens/Employee/Pickup%20Staff/CompFacilityNav.dart';
+import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManagePickupSchedule.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManageRequestsPage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/SetSchedulePage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup%20Staff/UpdateProfilePage.dart';
@@ -93,11 +95,10 @@ class _PickupStaffHomePageState extends State<PickupStaffHomePage> {
               ),
               const SizedBox(height: 16),
               CardWidget(
-                icon: Icons.delivery_dining,
-                label: 'Manage Delivery',
+                icon: Icons.location_pin,
+                label: 'Navigate to Compost Facility',
                 onPressed: () {
-                  // Add functionality for managing delivery
-                  // Show fulfilled requests with Maps location link
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>const CompFacilityNav()));
                 },
               ),
             ],
@@ -169,7 +170,7 @@ class DrawerWidgetState extends State<DrawerWidget> {
                   leading: const Icon(Icons.update),
                   title: const Text('Update Schedule'),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> const ManagePickupSchedule()));
                   },
                 ),
                 ListTile(
