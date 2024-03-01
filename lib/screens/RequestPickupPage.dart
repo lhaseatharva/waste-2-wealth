@@ -158,8 +158,6 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                                     permission ==
                                         LocationPermission.deniedForever) {
                                   print('Location permission denied');
-                                  LocationPermission ask =
-                                      await Geolocator.requestPermission();
                                 } else {
                                   Position? location = await _captureLocation();
                                   if (location != null) {
@@ -186,8 +184,6 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
                         if (permission == LocationPermission.denied ||
                             permission == LocationPermission.deniedForever) {
                           print('Location permission denied');
-                          LocationPermission ask =
-                              await Geolocator.requestPermission();
                         } else {
                           Position? location = await _captureLocation();
                           if (location != null) {
@@ -296,7 +292,6 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         print('Location permission denied');
-        LocationPermission ask = await Geolocator.requestPermission();
       } else {
         return await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);

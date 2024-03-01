@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:waste2wealth/Provider/RequestNotifierProvider.dart';
+import 'package:waste2wealth/screens/Restaurant/RestauaranLocationtMap.dart';
 
 class ManageRequestsPage extends StatefulWidget {
   const ManageRequestsPage({Key? key}) : super(key: key);
@@ -114,7 +115,7 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
       },
     );
 
-    if (confirmed) {
+    if (confirmed != null && confirmed) {
       try {
         setState(() {
           _loading = true;
@@ -245,7 +246,17 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
                                                 const Size.fromWidth(500),
                                           ),
                                           onPressed: () {
-                                            // Navigate to restaurant location map
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    RestaurantLocationMapPage(
+                                                  latitude: request['latitude'],
+                                                  longitude: request['longitude'],
+                                                  restaurantName:
+                                                      request['restaurantName'],
+                                                ),
+                                              ),
+                                            );
                                           },
                                           label: const Text(
                                             'Navigate',
