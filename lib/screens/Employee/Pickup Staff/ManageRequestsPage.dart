@@ -93,28 +93,28 @@ class _ManageRequestsPageState extends State<ManageRequestsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm'),
+          title: const Text('Confirm'),
           content:
-              Text('Are you sure you want to mark this request as complete?'),
+              const Text('Are you sure you want to mark this request as complete?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
-              child: Text('Yes'),
+              child: const Text('Yes'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: Text('No'),
+              child: const Text('No'),
             ),
           ],
         );
       },
     );
 
-    if (confirmed != null && confirmed) {
+    if (confirmed) {
       try {
         setState(() {
           _loading = true;
