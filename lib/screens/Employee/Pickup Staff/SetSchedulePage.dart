@@ -70,7 +70,6 @@ class _SetSchedulePageState extends State<SetSchedulePage> {
   }
 
   List<DropdownMenuItem<String>> _buildDropdownItems() {
-    // Replace with your list of locations
     List<String> locations = [
       'Kothrud',
       'Wagholi',
@@ -107,11 +106,9 @@ class _SetSchedulePageState extends State<SetSchedulePage> {
       User? currentUser = FirebaseAuth.instance.currentUser;
 
       if (currentUser != null) {
-        // Replace 'schedules' with your Firestore collection name
         CollectionReference<Map<String, dynamic>> schedulesCollection =
             FirebaseFirestore.instance.collection('Staff Schedule');
 
-        // Save schedule to Firestore with user's UID as the document ID
         await schedulesCollection.doc(currentUser.uid).set({
           'userId': currentUser.uid,
           'name': currentUser.displayName,
@@ -122,12 +119,10 @@ class _SetSchedulePageState extends State<SetSchedulePage> {
           content: Text('Schedule saved successfully'),
         ));
 
-        // Navigate back to the previous page or do any other navigation logic
         Navigator.pop(context);
       }
     } catch (error) {
       print('Error saving schedule: $error');
-      // Handle the error (e.g., show an error message to the user)
     }
   }
 }

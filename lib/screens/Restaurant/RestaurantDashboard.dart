@@ -59,7 +59,6 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               leading: const Icon(Icons.edit),
               title: const Text('Update Details'),
               onTap: () {
-                // Navigate to the update details page
                 Navigator.pop(context);
               },
             ),
@@ -67,7 +66,6 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
               leading: const Icon(Icons.calendar_today),
               title: const Text('Update Schedule'),
               onTap: () {
-                // Navigate to the update schedule page
                 Navigator.pop(context);
               },
             ),
@@ -118,7 +116,6 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Add your action when the button is pressed
               },
               child: const Text('View Details'),
             ),

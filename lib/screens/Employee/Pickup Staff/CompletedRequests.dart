@@ -18,7 +18,7 @@ class _CompletedRequestsPageState extends State<CompletedRequestsPage> {
   @override
   void initState() {
     super.initState();
-    fetchCompletedRequests(context); // Pass context to access the provider
+    fetchCompletedRequests(context); 
   }
 
   Future<void> fetchCompletedRequests(BuildContext context) async {
@@ -36,12 +36,12 @@ class _CompletedRequestsPageState extends State<CompletedRequestsPage> {
         completedRequests = snapshot.docs.map((doc) => doc.data()).toList();
       });
 
-      // Update loading state to false after fetching requests
+      
       Provider.of<CompletedRequestsProvider>(context, listen: false)
           .setLoading(false);
     } catch (error) {
       print('Error fetching completed requests: $error');
-      // Update loading state to false in case of error
+      
       Provider.of<CompletedRequestsProvider>(context, listen: false)
           .setLoading(false);
     }

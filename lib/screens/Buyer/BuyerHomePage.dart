@@ -32,7 +32,7 @@ class _BuyerHomePage extends State<BuyerHomePage> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Add functionality for Pickup Staff tasks
+                
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.lightGreen.shade100,
@@ -43,7 +43,7 @@ class _BuyerHomePage extends State<BuyerHomePage> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Add functionality for other tasks or features
+                
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
