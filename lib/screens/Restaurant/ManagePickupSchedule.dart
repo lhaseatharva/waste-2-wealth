@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ManagePickupSchedule extends StatefulWidget {
   const ManagePickupSchedule({Key? key}) : super(key: key);
@@ -8,7 +10,7 @@ class ManagePickupSchedule extends StatefulWidget {
 }
 
 class _ManagePickupScheduleState extends State<ManagePickupSchedule> {
-  late Map<String, dynamic> schedule = {};
+  late Map<String, bool> schedule = {};
 
   @override
   void initState() {
@@ -17,17 +19,64 @@ class _ManagePickupScheduleState extends State<ManagePickupSchedule> {
   }
 
   Future<void> fetchUserSchedule() async {
-    // Dummy data for demonstration
-    schedule = {
-      'Monday': true,
-      'Tuesday': false,
-      'Wednesday': true,
-      'Thursday': false,
-      'Friday': true,
-      'Saturday': false,
-      'Sunday': true,
-    };
-    setState(() {});
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final userContactNumber = await _fetchUserContactNumber(currentUser.uid);
+
+      // Initialize all days to false by default
+      schedule = {
+        'Monday': false,
+        'Tuesday': false,
+        'Wednesday': false,
+        'Thursday': false,
+        'Friday': false,
+        'Saturday': false,
+        'Sunday': false,
+      };
+
+      // Fetch data from Firestore
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('PickupRequests')
+          .where('contactNumber', isEqualTo: userContactNumber)
+          .get();
+
+      // Iterate through documents to update schedule
+      snapshot.docs.forEach((doc) {
+        // Check for fields like tuesdayStatus, mondayStatus, etc.
+        if (doc['tuesdayStatus'] != null && doc['tuesdayStatus']) {
+          schedule['Tuesday'] = true;
+        }
+        if (doc['mondayStatus'] != null && doc['mondayStatus']) {
+          schedule['Monday'] = true;
+        }
+        if (doc['wednesdayStatus'] != null && doc['wednesdayStatus']) {
+          schedule['Wednesday'] = true;
+        }
+        if (doc['thursdayStatus'] != null && doc['thursdayStatus']) {
+          schedule['Thursday'] = true;
+        }
+        if (doc['fridayStatus'] != null && doc['fridayStatus']) {
+          schedule['Friday'] = true;
+        }
+        if (doc['saturdayStatus'] != null && doc['saturdayStatus']) {
+          schedule['Saturday'] = true;
+        }
+        if (doc['sundayStatus'] != null && doc['sundayStatus']) {
+          schedule['Sunday'] = true;
+        }
+        // Add conditions for other days similarly
+      });
+
+      setState(() {});
+    }
+  }
+
+  Future<String> _fetchUserContactNumber(String userId) async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(userId)
+        .get();
+    return userDoc['contactNumber'];
   }
 
   @override
@@ -38,26 +87,26 @@ class _ManagePickupScheduleState extends State<ManagePickupSchedule> {
         backgroundColor: Colors.lightGreen.shade200,
       ),
       body: schedule.isNotEmpty
-          ? ListView.builder(
-              itemCount: schedule.length,
-              itemBuilder: (context, index) {
-                final day = schedule.keys.elementAt(index);
+          ? ListView(
+              children: schedule.entries.map((entry) {
+                final day = entry.key;
+                final status = entry.value;
                 return ListTile(
                   title: Text(day),
-                  subtitle: DropdownButtonFormField<String>(
-                    value: schedule[day].toString(),
+                  subtitle: DropdownButtonFormField<bool>(
+                    value: status,
                     items: [
-                      DropdownMenuItem(value: 'true', child: Text('True')),
-                      DropdownMenuItem(value: 'false', child: Text('False')),
+                      DropdownMenuItem(value: true, child: Text('Yes')),
+                      DropdownMenuItem(value: false, child: Text('No')),
                     ],
                     onChanged: (value) {
                       setState(() {
-                        schedule[day] = value == 'true';
+                        schedule[day] = value!;
                       });
                     },
                   ),
                 );
-              },
+              }).toList(),
             )
           : Center(
               child: CircularProgressIndicator(),
@@ -73,7 +122,7 @@ class _ManagePickupScheduleState extends State<ManagePickupSchedule> {
 
   void saveUserSchedule() {
     // Implement your saving logic here
-    // For dummy data, just print the schedule
+    // For demonstration purposes, just print the schedule
     print(schedule);
   }
 }
