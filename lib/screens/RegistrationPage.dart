@@ -31,6 +31,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _contactNumberController = TextEditingController();
+  final _restaurantNameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -38,26 +39,47 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     Future<void> registerUser() async {
       try {
-        UserCredential userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
-        await FirebaseFirestore.instance
-            .collection('Users')
-            .doc(userCredential.user!.uid)
-            .set({
+        final userUid = userCredential.user!.uid;
+
+        // Prepare user data
+        final userData = {
           'name': _nameController.text,
           'email': _emailController.text,
           'contactNumber': _contactNumberController.text,
           'role': provider.selectedRole,
           'subRole': provider.selectedSubRole,
-        });
-        print("User registered: ${userCredential.user!.uid}");
+        };
+
+        // Store additional data for Restaurant Owner
+        if (provider.selectedRole == 'Restaurant Owner') {
+          userData['restaurantName'] = _restaurantNameController.text;
+
+          // Store restaurant data in Firestore under "Restaurants" collection
+          await FirebaseFirestore.instance.collection('Restaurants').doc(_restaurantNameController.text).set({
+            'contactNumber': _contactNumberController.text,
+            'email': _emailController.text,
+          });
+        }
+
+        // Store user data in Firestore under "Users" collection
+        await FirebaseFirestore.instance.collection('Users').doc(userUid).set(userData);
+
+        print("User registered: $userUid");
         provider.setRegistrationSuccessful(true);
 
+        // Show registration success message using SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration Successful!'),
+            duration: Duration(seconds: 2), // Adjust the duration as needed
+          ),
+        );
+
         // Redirect to LoginPage after successful registration with page transition animation
-        // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
@@ -67,8 +89,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
               const end = Offset.zero;
               const curve = Curves.easeInOut;
 
-              var tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
               var offsetAnimation = animation1.drive(tween);
 
@@ -208,6 +229,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         return null;
                       },
                     ),
+                    if (provider.selectedRole == 'Restaurant Owner') ...[
+                      const SizedBox(height: 16.0),
+                      TextFormField(
+                        controller: _restaurantNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Restaurant Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter the restaurant name';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                     const SizedBox(height: 16.0),
                     DropdownButtonFormField<String>(
                       value: provider.selectedRole,
@@ -270,8 +307,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         if (_formKey.currentState!.validate()) {
                           await registerUser(); // Call the registration function
-
-                          // Do not show the "Go to Login" button after successful registration
                         }
                       },
                       style: ElevatedButton.styleFrom(

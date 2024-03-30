@@ -7,7 +7,7 @@ import 'package:waste2wealth/Provider/pickuprequest_provider.dart';
 import 'package:geolocator/geolocator.dart';
 
 class RequestPickupPage extends StatefulWidget {
-  const RequestPickupPage({Key? key}) : super(key: key);
+  const RequestPickupPage({super.key});
 
   @override
   _RequestPickupPageState createState() => _RequestPickupPageState();
