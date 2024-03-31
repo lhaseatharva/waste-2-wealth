@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:waste2wealth/Provider/pickuprequest_provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RequestPickupPage extends StatefulWidget {
-  const RequestPickupPage({super.key});
+  const RequestPickupPage({Key? key}) : super(key: key);
 
   @override
   _RequestPickupPageState createState() => _RequestPickupPageState();
@@ -26,6 +27,13 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
 
   bool _isSubmitLoading = false;
   bool _isLocationLoading = false;
+  late User? currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUser = FirebaseAuth.instance.currentUser;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,13 +217,11 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
     );
 
     try {
-      LocationPermission permission =
-          await Geolocator.checkPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         print('Location permission denied');
-        LocationPermission ask =
-            await Geolocator.requestPermission();
+        LocationPermission ask = await Geolocator.requestPermission();
       } else {
         Position? location = await _captureLocation();
         if (location != null) {
@@ -238,22 +244,18 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
     );
 
     try {
-      LocationPermission permission =
-          await Geolocator.checkPermission();
+      LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         print('Location permission denied');
-        LocationPermission ask =
-            await Geolocator.requestPermission();
+        LocationPermission ask = await Geolocator.requestPermission();
       } else {
-        Position? location =
-            await Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.high);
+        Position? location = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
         if (location != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text('Location captured successfully!!'),
+              content: Text('Location captured successfully!!'),
             ),
           );
         }
@@ -274,12 +276,13 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
 
     try {
       // Generate an alphanumeric request ID
-      final requestId = 'REQ${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(10000)}';
+      final requestId =
+          'REQ${DateTime.now().millisecondsSinceEpoch}${Random().nextInt(10000)}';
 
       // Capture current timestamp
       final timestamp = FieldValue.serverTimestamp();
 
-      // Save request data to Firestore
+      // Save request data to Firestore with user's UID as document ID
       Map<String, dynamic> requestData = {
         'requestId': requestId,
         'restaurantName': _restaurantNameController.text,
@@ -293,7 +296,7 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
       };
 
       // Create separate boolean fields for each day and set status
-      for (var day in [
+      final allDays = [
         'Sunday',
         'Monday',
         'Tuesday',
@@ -301,13 +304,19 @@ class _RequestPickupPageState extends State<RequestPickupPage> {
         'Thursday',
         'Friday',
         'Saturday',
-      ]) {
-        if (_pickupDays.contains(day)) {
-          requestData['${day.toLowerCase()}Status'] = 'pending';
-        }
+      ];
+
+      // Initialize status for all days
+      for (var day in allDays) {
+        requestData['${day.toLowerCase()}Status'] =
+            _pickupDays.contains(day) ? 'pending' : 'not selected';
       }
 
-      await pickupRequestsRef.add(requestData);
+      // Save request data with user's UID as document ID
+      await pickupRequestsRef
+          .doc(currentUser
+              ?.uid) // Use user's UID as document ID if currentUser is not null
+          .set(requestData);
 
       // Display confirmation dialog
       showDialog(

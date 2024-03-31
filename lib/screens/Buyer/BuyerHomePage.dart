@@ -166,6 +166,7 @@ class _OrderPageState extends State<OrderPage> {
   final _formKey = GlobalKey<FormState>();
   String? selectedCompostType;
   double? compostRate;
+  double? _quantityAvailable;
   double totalBill = 0.0;
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -204,8 +205,9 @@ class _OrderPageState extends State<OrderPage> {
                   labelText: 'Type of Compost',
                 ),
               ),
-              if (compostRate != null)
-                Text('Rate: $compostRate'), // Display compost rate
+              if (compostRate != null) Text('Rate: $compostRate'),
+              Text(
+                  'Quantity Available : $_quantityAvailable'), // Display compost rate
               TextFormField(
                 controller: _quantityController,
                 keyboardType: TextInputType.number,
@@ -260,6 +262,7 @@ class _OrderPageState extends State<OrderPage> {
       final data = snapshot.data() as Map<String, dynamic>;
       setState(() {
         compostRate = data['rate'];
+        _quantityAvailable = data['quantity'];
       });
       calculateTotalBill();
     } catch (error) {
@@ -277,38 +280,62 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Future<void> placeOrder() async {
-    try {
-      final double quantity = double.parse(_quantityController.text);
-      final String address = _addressController.text;
+  try {
+    final double quantity = double.parse(_quantityController.text);
+    final String address = _addressController.text;
 
-      // Add order to Firestore
-      await FirebaseFirestore.instance.collection('Orders').add({
-        'compostType': selectedCompostType,
-        'quantity': quantity,
-        'address': address,
-        'totalBill': totalBill,
-        'paymentMethod': 'Cash/UPI at Delivery',
-      });
-
-      // Show success message
+    if (_quantityAvailable != null && quantity > _quantityAvailable!) {
+      // Show error message if order quantity exceeds available quantity
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Order placed successfully'),
+          content: Text('Order quantity exceeds available quantity'),
         ),
       );
-
-      // Clear form fields
-      _quantityController.clear();
-      _addressController.clear();
-    } catch (error) {
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to place order: $error'),
-        ),
-      );
+      return;
     }
+
+    // Get the user's UID
+    final userUid = FirebaseAuth.instance.currentUser!.uid;
+
+    // Add order to Firestore with a random document ID and include the user UID
+    await FirebaseFirestore.instance.collection('Orders').add({
+      'userId': userUid,
+      'compostType': selectedCompostType,
+      'quantity': quantity,
+      'address': address,
+      'totalBill': totalBill,
+      'paymentMethod': 'Cash/UPI at Delivery',
+    });
+
+    // Update compost quantity in Firestore collection
+    if (_quantityAvailable != null) {
+      final newQuantity = _quantityAvailable! - quantity;
+      await FirebaseFirestore.instance
+          .collection('Compost Stock')
+          .doc(selectedCompostType)
+          .update({'quantity': newQuantity});
+    }
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Order placed successfully'),
+      ),
+    );
+
+    // Clear form fields
+    _quantityController.clear();
+    _addressController.clear();
+  } catch (error) {
+    // Show error message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Failed to place order: $error'),
+      ),
+    );
   }
+}
+
 }
 
 void main() {

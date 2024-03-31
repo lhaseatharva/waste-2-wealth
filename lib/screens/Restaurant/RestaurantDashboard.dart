@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:waste2wealth/screens/Employee/Pickup%20Staff/ManagePickupSchedule.dart';
+import 'package:waste2wealth/screens/Restaurant/ManagePickupSchedule.dart';
 import 'package:waste2wealth/screens/LoginPage.dart';
 import 'package:waste2wealth/screens/Restaurant/UpdateProfilePage.dart';
 
@@ -94,7 +94,7 @@ class _RestaurantDashboardState extends State<RestaurantDashboard> {
                     leading: const Icon(Icons.calendar_today),
                     title: const Text('Update Schedule'),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const ManagePickupSchedule()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => ManagePickupSchedule()));
                     },
                   ),
                   ListTile(

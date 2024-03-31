@@ -32,7 +32,10 @@ class _TrackOrderState extends State<TrackOrder> {
         backgroundColor: Colors.lightGreen.shade200,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('Orders').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('Orders')
+            .where('userId', isEqualTo: currentUserUid) // Filter orders by userId
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(
@@ -54,17 +57,43 @@ class _TrackOrderState extends State<TrackOrder> {
                 final totalBill = order['totalBill'];
                 final paymentMethod = order['paymentMethod'];
 
-                return ListTile(
-                  title: Text('Compost Type: $compostType'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Quantity: $quantity'),
-                      Text('Address: $address'),
-                      Text('Total Bill: $totalBill'),
-                      Text('Payment Method: $paymentMethod'),
-                    ],
-                  ),
+                // Fetch current user details from the 'Users' collection
+                return FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('Users')
+                      .doc(currentUserUid)
+                      .get(),
+                  builder: (context, userSnapshot) {
+                    if (userSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (userSnapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${userSnapshot.error}'),
+                      );
+                    } else {
+                      final userData = userSnapshot.data!;
+                      final contacNumber = userData['contactNumber'];
+                      final email = userData['email'];
+
+                      return ListTile(
+                        title: Text('Compost Type: $compostType'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Quantity: $quantity'),
+                            Text('Address: $address'),
+                            Text('Total Bill: $totalBill'),
+                            Text('Payment Method: $paymentMethod'),
+                            Text('Phone Number: $contacNumber'),
+                            Text('Email: $email'),
+                          ],
+                        ),
+                      );
+                    }
+                  },
                 );
               },
             );
