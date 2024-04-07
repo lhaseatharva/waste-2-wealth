@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:waste2wealth/screens/Admin/AdminPanel.dart';
 import 'package:waste2wealth/screens/Buyer/BuyerHomePage.dart';
 import 'package:waste2wealth/screens/Employee/Compost Facility Staff/CompostFacilityStaffHomePage.dart';
 import 'package:waste2wealth/screens/Employee/Pickup Staff/PickupStaffHomePage.dart';
@@ -101,14 +102,16 @@ class _LoginPageState extends State<LoginPage> {
                             setState(() {
                               selectedRole = value!;
                               // Reset the subRole when the role changes
-                              selectedSubRole =
-                                  value == 'Employee' ? 'Pickup Staff' : 'Sub Role';
+                              selectedSubRole = value == 'Employee'
+                                  ? 'Pickup Staff'
+                                  : 'Sub Role';
                             });
                           },
                           items: [
                             'Employee',
                             'Buyer',
-                            'Restaurant Owner'
+                            'Restaurant Owner',
+                            'Admin'
                           ].map((role) {
                             return DropdownMenuItem(
                               value: role,
@@ -133,10 +136,8 @@ class _LoginPageState extends State<LoginPage> {
                               });
                             },
                             items: selectedRole == 'Employee'
-                                ? [
-                                    'Pickup Staff',
-                                    'Compost Facility Staff'
-                                  ].map((subRole) {
+                                ? ['Pickup Staff', 'Compost Facility Staff']
+                                    .map((subRole) {
                                     return DropdownMenuItem(
                                       value: subRole,
                                       child: Text(subRole),
@@ -215,6 +216,18 @@ class _LoginPageState extends State<LoginPage> {
                                           'You are now logged in successfully'),
                                     ),
                                   );
+                                } else if (role == 'Admin') {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => AdminPanel()),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'You are now logged in as an admin'),
+                                    ),
+                                  );
                                 } else if (role == 'Restaurant Owner') {
                                   Navigator.pushReplacement(
                                     context,
@@ -226,7 +239,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                          'You are now logged in successfully as a Restaurant Owner'),
+                                          'You are now logged in as a Restaurant Owner'),
                                     ),
                                   );
                                 }
@@ -253,9 +266,9 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.push(
                               context,
                               PageRouteBuilder(
-                                pageBuilder: (context, animatio,
-                                        secondaryAnimation) =>
-                                    const RegistrationPage(),
+                                pageBuilder:
+                                    (context, animatio, secondaryAnimation) =>
+                                        const RegistrationPage(),
                                 transitionsBuilder: (context, animation,
                                     secondaryAnimation, child) {
                                   const begin = Offset(1.0, 0.0);
@@ -263,8 +276,7 @@ class _LoginPageState extends State<LoginPage> {
                                   const curve = Curves.easeInOutQuad;
                                   var tween = Tween(begin: begin, end: end)
                                       .chain(CurveTween(curve: curve));
-                                  var offsetAnimation =
-                                      animation.drive(tween);
+                                  var offsetAnimation = animation.drive(tween);
                                   return SlideTransition(
                                     position: offsetAnimation,
                                     child: child,
@@ -297,8 +309,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<List<String>> fetchRoleEmails(String role, String subRole) async {
     try {
-      QuerySnapshot querySnapshot =
-          await _firestore.collection('Users').get();
+      QuerySnapshot querySnapshot = await _firestore.collection('Users').get();
 
       List<String> emails = [];
       querySnapshot.docs.forEach((DocumentSnapshot doc) {
