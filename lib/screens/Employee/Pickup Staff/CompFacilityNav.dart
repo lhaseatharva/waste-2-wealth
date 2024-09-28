@@ -23,8 +23,8 @@ class _CompFacilityNavState extends State<CompFacilityNav> {
       ),
       body: FlutterMap(
         options: MapOptions(
-          center: LatLng(widget.latitude ?? 0, widget.longitude ?? 0),
-          zoom: 15.0,
+          initialCenter: LatLng(widget.latitude, widget.longitude),
+          initialZoom: 15.0,
         ),
         children: [
           TileLayer(
